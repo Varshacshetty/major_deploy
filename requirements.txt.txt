@@ -1,0 +1,10 @@
+flask
+flask-cors
+ultralytics
+opencv-python
+numpy
+pillow
+torch
+werkzeug
+reportlab
+python-dotenv

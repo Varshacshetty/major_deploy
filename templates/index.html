@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weed Detection App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .progress-bar { height: 20px; border-radius: 10px; background-color: #e5e7eb; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.5s ease; }
+        .crop-fill { background: linear-gradient(to right, #10b981, #059669); }
+        .weed-fill { background: linear-gradient(to right, #f59e0b, #d97706); }
+        .loading { border: 4px solid #f3f3f3; border-top: 4px solid #10b981; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .chat-bubble { max-width: 80%; padding: 8px 12px; border-radius: 18px; margin: 5px 0; word-wrap: break-word; }
+        .user-bubble { background: #10b981; color: white; margin-left: auto; }
+        .ai-bubble { background: #e5e7eb; color: #374151; margin-right: auto; }
+        .weed-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .weed-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-blue-50 min-h-screen text-gray-800">
+
+<div class="container mx-auto p-6 max-w-6xl">
+    <!-- Header -->
+    <div class="text-center mb-8 fade-in">
+        <h1 class="text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Weed Detection & Herbicide Advisor
+        </h1>
+        <p class="text-xl text-gray-600">Upload potato field images for AI-powered weed analysis and eco-friendly recommendations.</p>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="bg-white p-8 rounded-xl shadow-lg mb-8 border border-gray-200 fade-in">
+        <div class="flex items-center justify-center mb-6">
+            <!-- Inline SVG Icon for Upload -->
+            <svg class="w-8 h-8 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h2 class="text-2xl font-semibold text-gray-800">Upload Field Image</h2>
+        </div>
+        <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+            <label for="imageInput" class="sr-only">Choose image</label>
+            <input type="file" id="imageInput" accept="image/*" class="mb-4 border-2 border-dashed border-gray-300 rounded-lg p-4 w-full md:w-auto file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+            <button id="uploadBtn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md transition duration-300 flex items-center gap-2 disabled:opacity-50" aria-label="Upload and detect weeds">
+                <span id="uploadText">Upload & Detect</span>
+                <div id="uploadSpinner" class="loading hidden" aria-hidden="true"></div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Card (Hidden Initially) -->
+    <div id="results" class="hidden bg-white p-8 rounded-xl shadow-lg mb-8 border border-gray-200 fade-in">
+        <div class="flex items-center justify-center mb-6">
+            <!-- Inline SVG Icon for Results -->
+            <svg class="w-8 h-8 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 class="text-2xl font-semibold text-gray-800">Detection Results</h2>
+        </div>
+        
+        <!-- Annotated Image -->
+        <div class="text-center mb-6">
+            <img id="annotatedImg" src="" alt="Annotated image with detected weeds and crops" class="max-w-full h-auto rounded-lg shadow-md mx-auto mb-4">
+        </div>
+        
+        <!-- Summary with Progress Bars -->
+        <div id="summary" class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h3 class="text-lg font-semibold mb-4 text-center">Summary</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600">Crop (Potato Plants)</p>
+                    <div class="progress-bar mb-2">
+                        <div id="cropFill" class="progress-fill crop-fill" style="width: 0%;"></div>
+                    </div>
+                    <p id="cropSummary" class="text-sm font-medium"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Weeds</p>
+                    <div class="progress-bar mb-2">
+                        <div id="weedFill" class="progress-fill weed-fill" style="width: 0%;"></div>
+                    </div>
+                    <p id="weedSummary" class="text-sm font-medium"></p>
+                </div>
+            </div>
+            <p class="text-center mt-4 text-gray-700">Total Detections: <span id="totalDetections"></span></p>
+        </div>
+
+        <!-- Detected Weeds List -->
+        <div id="weedList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+
+        <!-- Best Overall Recommendation -->
+        <div id="bestOverall" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6 hidden">
+            <h3 class="font-semibold text-yellow-800 mb-2">Best Overall Recommendation</h3>
+            <p id="bestOrganic" class="text-green-700"></p>
+            <p id="bestChemical" class="text-red-700"></p>
+            <p id="bestWhy" class="text-gray-600 mt-2"></p>
+        </div>
+
+        <!-- PDF Button -->
+        <div class="text-center">
+            <button id="pdfBtn" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md transition duration-300 flex items-center gap-2 mx-auto disabled:opacity-50" aria-label="Generate PDF report">
+                <span id="pdfText">Generate PDF Report</span>
+                <div id="pdfSpinner" class="loading hidden" aria-hidden="true"></div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chatbot Card -->
+    <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 fade-in">
+        <div class="flex items-center justify-center mb-6">
+            <!-- Inline SVG Icon for Chat -->
+            <svg class="w-8 h-8 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <h2 class="text-2xl font-semibold text-gray-800">AI Chatbot Assistant</h2>
+        </div>
+        <div id="chatHistory" class="mb-4 max-h-64 overflow-y-auto space-y-2 p-4 bg-gray-50 rounded-lg" role="log" aria-live="polite"></div>
+        <div class="flex gap-2">
+            <label for="chatInput" class="sr-only">Ask a question</label>
+            <input type="text" id="chatInput" placeholder="Ask about weeds, herbicides, or potato farming..." class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button id="chatBtn" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition duration-300 flex items-center gap-2 disabled:opacity-50" aria-label="Send question">
+                <span id="chatText">Ask</span>
+                <div id="chatSpinner" class="loading hidden" aria-hidden="true"></div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global variables
+    let latestDetection = null;
+
+    // Upload functionality
+    const uploadBtn = document.getElementById('uploadBtn');
+    const imageInput = document.getElementById('imageInput');
+    const uploadText = document.getElementById('uploadText');
+    const uploadSpinner = document.getElementById('uploadSpinner');
+    const resultsDiv = document.getElementById('results');
+    const annotatedImg = document.getElementById('annotatedImg');
+    const cropFill = document.getElementById('cropFill');
+    const weedFill = document.getElementById('weedFill');
+    const cropSummary = document.getElementById('cropSummary');
+    const weedSummary = document.getElementById('weedSummary');
+    const totalDetections = document.getElementById('totalDetections');
+    const weedList = document.getElementById('weedList');
+    const bestOverall = document.getElementById('bestOverall');
+    const bestOrganic = document.getElementById('bestOrganic');
+    const bestChemical = document.getElementById('bestChemical');
+    const bestWhy = document.getElementById('bestWhy');
+
+    uploadBtn.addEventListener('click', async () => {
+        const file = imageInput.files[0];
+        if (!file) return alert('Please select an image first.');
+        if (!file.type.startsWith('image/')) return alert('Please select a valid image file.');
+        if (file.size > 16 * 1024 * 1024) return alert('File too large (max 16MB).');
+
+        // Loading state
+        uploadBtn.disabled = true;
+        uploadText.textContent = 'Detecting...';
+        uploadSpinner.classList.remove('hidden');
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await fetch('/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+                return;
+            }
+
+            latestDetection = data;
+
+            // Display annotated image (FIXED: Cache-bust, error handling, visibility, debug log)
+            if (data.annotated_img) {
+                // Cache-bust to force reload (prevents browser caching old/blank images)
+                const imgSrc = data.annotated_img + '?t=' + new Date().getTime();
+                annotatedImg.src = imgSrc;
+                // Dynamic alt text for accessibility
+                annotatedImg.alt = `Annotated image showing ${data.crop_count} potato plants and ${data.weed_count} weeds`;
+                annotatedImg.style.display = 'block';  // Ensure visible
+                annotatedImg.classList.add('fade-in');
+                console.log('Setting src to:', imgSrc);  // Debug: Check F12 Console
+                
+                // Error handler if image fails to load (e.g., 404 or corrupt)
+                annotatedImg.onerror = () => {
+                    annotatedImg.style.display = 'none';
+                    annotatedImg.alt = 'Image failed to load - check backend logs';
+                    console.error('Annotated image load failed:', data.annotated_img);
+                    
+                    // Add fallback message
+                    let placeholder = annotatedImg.parentNode.querySelector('.placeholder-msg');
+                    if (!placeholder) {
+                        placeholder = document.createElement('p');
+                        placeholder.textContent = 'Annotated image not generated or failed to load - check upload/logs.';
+                        placeholder.className = 'text-gray-500 text-center mt-4 placeholder-msg';
+                        annotatedImg.parentNode.appendChild(placeholder);
+                    }
+                };
+                
+                // Success handler (optional: remove placeholder if exists)
+                annotatedImg.onload = () => {
+                    const placeholder = annotatedImg.parentNode.querySelector('.placeholder-msg');
+                    if (placeholder) placeholder.remove();
+                    console.log('Annotated image loaded successfully');  // Debug
+                };
+            } else {
+                // No image from backend
+                annotatedImg.style.display = 'none';
+                annotatedImg.alt = 'No annotated image available';
+                let placeholder = annotatedImg.parentNode.querySelector('.placeholder-msg');
+                if (!placeholder) {
+                    placeholder = document.createElement('p');
+                    placeholder.textContent = 'Annotated image not generated - check upload/logs.';
+                    placeholder.className = 'text-gray-500 text-center mt-4 placeholder-msg';
+                    annotatedImg.parentNode.appendChild(placeholder);
+                }
+                console.warn('No annotated_img in response:', data);
+            }
+
+            // Summary and progress bars
+            cropFill.style.width = `${data.crop_ratio}%`;
+            weedFill.style.width = `${data.weed_ratio}%`;
+            cropSummary.textContent = `${data.crop_count} plants (${data.crop_ratio}%)`;
+            weedSummary.textContent = `${data.weed_count} weeds (${data.weed_ratio}%)`;
+            totalDetections.textContent = data.total_detections;
+
+            // Weed list (multiclass handling with no-weeds fallback)
+            weedList.innerHTML = '';
+            let weedCount = 0;
+            if (data.detected) {
+                Object.entries(data.detected).forEach(([label, count]) => {
+                    if (label !== 'PotatoPlant' && count > 0) {
+                        weedCount++;
+                        const rec = data.herbicide ? data.herbicide[label] || {} : {};
+                        const card = document.createElement('div');
+                        card.className = 'weed-card bg-green-50 border-l-4 border-green-500 p-4 rounded-lg';
+                        card.innerHTML = `
+                            <h3 class="font-semibold text-green-800 mb-2">${label} (Count: ${count})</h3>
+                            <div class="space-y-2 text-sm">
+                                <p class="text-green-700"><strong>Organic:</strong> ${rec.organic || 'N/A'}<br><em>${rec.why_organic || 'Sustainable for potato fields'}</em></p>
+                                <p class="text-red-700"><strong>Chemical:</strong> ${rec.chemical || 'N/A'}<br><em>${rec.why_chemical || 'Use as last resort - rotate to avoid resistance'}</em></p>
+                            </div>
+                        `;
+                        weedList.appendChild(card);
+                    }
+                });
+            }
+            
+            // No weeds detected message
+            if (weedCount === 0) {
+                const noWeedMsg = document.createElement('div');
+                noWeedMsg.className = 'col-span-full text-center text-green-600 font-medium p-4 bg-green-50 rounded-lg';
+                noWeedMsg.innerHTML = 'No weeds detected - Great field health! 🎉<br><small>Focus on preventive IPM practices.</small>';
+                weedList.appendChild(noWeedMsg);
+            }
+
+            // Best overall
+            if (data.best_overall) {
+                bestOrganic.innerHTML = `<strong>Organic:</strong> ${data.best_overall.organic || 'N/A'}`;
+                bestChemical.innerHTML = `<strong>Chemical:</strong> ${data.best_overall.chemical || 'N/A'}`;
+                bestWhy.textContent = `Why: ${data.best_overall.why || 'N/A'}`;
+                bestOverall.classList.remove('hidden');
+            } else {
+                bestOverall.classList.add('hidden');
+            }
+
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            
+            // Debug log (remove after testing)
+            console.log('Upload response:', data);
+        } catch (error) {
+            alert(`Upload failed: ${error.message}`);
+            console.error('Upload error:', error);
+        } finally {
+            uploadBtn.disabled = false;
+            uploadText.textContent = 'Upload & Detect';
+            uploadSpinner.classList.add('hidden');
+        }
+    });
+
+    // PDF Generation
+    const pdfBtn = document.getElementById('pdfBtn');
+    const pdfText = document.getElementById('pdfText');
+    const pdfSpinner = document.getElementById('pdfSpinner');
+
+    pdfBtn.addEventListener('click', async () => {
+        if (!latestDetection) return alert('Please upload and detect first.');
+
+        // Loading state
+        pdfBtn.disabled = true;
+        pdfText.textContent = 'Generating...';
+        pdfSpinner.classList.remove('hidden');
+
+        try {
+            const res = await fetch('/generate_pdf', { method: 'POST' });
+            const data = await res.json();
+
+            if (data.error) {
+                alert(`PDF Error: ${data.error}`);
+                return;
+            }
+
+            window.open(data.pdf, '_blank');
+            // Optional: Success feedback
+            console.log('PDF generated:', data.pdf);  // Debug
+        } catch (error) {
+            alert(`PDF generation failed: ${error.message}`);
+            console.error('PDF error:', error);
+        } finally {
+            pdfBtn.disabled = false;
+            pdfText.textContent = 'Generate PDF Report';
+            pdfSpinner.classList.add('hidden');
+        }
+    });
+
+    // Chatbot functionality
+    const chatBtn = document.getElementById('chatBtn');
+    const chatInput = document.getElementById('chatInput');
+    const chatText = document.getElementById('chatText');
+    const chatSpinner = document.getElementById('chatSpinner');
+    const chatHistory = document.getElementById('chatHistory');
+
+    function addMessageToHistory(content, isUser  = false) {
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${isUser  ? 'user-bubble' : 'ai-bubble'}`;
+        bubble.textContent = content;
+        chatHistory.appendChild(bubble);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        
+        // Limit history to last 20 messages to prevent overflow
+        if (chatHistory.children.length > 20) {
+            chatHistory.removeChild(chatHistory.firstChild);
+        }
+    }
+
+    function sendChatMessage(question) {
+        // Add user message
+        addMessageToHistory(question, true);
+
+        // Loading state
+        chatBtn.disabled = true;
+        chatText.textContent = 'Sending...';
+        chatSpinner.classList.remove('hidden');
+        chatInput.value = '';
+
+        fetch('/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: question })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                addMessageToHistory(`Error: ${data.error}`, false);
+                return;
+            }
+            addMessageToHistory(data.answer, false);
+            
+            // Debug log (remove after testing)
+            console.log('Chat response:', data);
+        })
+        .catch(error => {
+            addMessageToHistory(`Chat failed: ${error.message}`, false);
+            console.error('Chat error:', error);
+        })
+        .finally(() => {
+            chatBtn.disabled = false;
+            chatText.textContent = 'Ask';
+            chatSpinner.classList.add('hidden');
+        });
+    }
+
+    chatBtn.addEventListener('click', () => {
+        const question = chatInput.value.trim();
+        if (!question) return alert('Please enter a question.');
+        sendChatMessage(question);
+    });
+
+    // Enter key support for chat input
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            chatBtn.click();
+        }
+    });
+</script>

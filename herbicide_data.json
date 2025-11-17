@@ -1,0 +1,43 @@
+{
+    "PalmerAmaranth": {
+        "organic": "Neem extract",
+        "chemical": "Glyphosate",
+        "why_organic": "Neem is natural, targets broadleaf weeds like Palmer Amaranth without harming soil microbes.",
+        "why_chemical": "Glyphosate is effective for systemic control but use sparingly to avoid resistance."
+    },
+    "Nutsedge": {
+        "organic": "Corn gluten meal",
+        "chemical": "Sulfentrazone",
+        "why_organic": "Corn gluten prevents seed germination naturally, ideal for sedges.",
+        "why_chemical": "Sulfentrazone inhibits growth quickly but apply carefully near crops."
+    },
+    "Purslane": {
+        "organic": "Vinegar spray",
+        "chemical": "Paraquat",
+        "why_organic": "Vinegar desiccates leaves safely for small weeds.",
+        "why_chemical": "Paraquat is a contact killer but highly toxic—avoid near potatoes."
+    },
+    "SpottedSpurge": {
+        "organic": "Boiling water",
+        "chemical": "Atrazine",
+        "why_organic": "Boiling water kills roots without chemicals.",
+        "why_chemical": "Atrazine controls broadleaves but can leach into groundwater."
+    },
+    "Goosegrass": {
+        "organic": "Mulching",
+        "chemical": "Diuron",
+        "why_organic": "Mulching smothers grass weeds like Goosegrass, promoting soil health.",
+        "why_chemical": "Diuron persists in soil for long-term control but monitor for crop safety."
+    },
+    "fallbacks": {
+        "palmer amaranth": "Palmer Amaranth is a fast-growing broadleaf weed that competes aggressively with potato crops for nutrients and water. Organic control: Neem extract. Chemical: Glyphosate (use sparingly to avoid resistance). Always rotate herbicides.",
+        "glyphosate": "Glyphosate is a non-selective chemical herbicide effective against broadleaf and grassy weeds. It's systemic (absorbed by plants) but can lead to resistance if overused. Safe for potatoes if applied pre-emergence; prefer organic alternatives like Neem for sustainability.",
+        "neem": "Neem extract is a natural, organic biopesticide derived from neem tree leaves. It disrupts weed growth without harming beneficial insects or soil health, making it ideal for potato fields.",
+        "nutsedge": "Nutsedge (a sedge weed) spreads via tubers and is hard to control. Organic: Corn gluten meal to prevent germination. Chemical: Sulfentrazone for quick action, but apply away from potato roots to avoid damage.",
+        "purslane": "Purslane is a succulent annual weed that thrives in warm soils. Organic: Vinegar spray (20% acetic acid) to burn leaves. Chemical: Paraquat for contact kill, but it's highly toxic—use PPE and avoid drift to potatoes.",
+        "spottedspurge": "Spotted Spurge is a low-growing weed with milky sap. Organic: Boiling water for spot treatment. Chemical: Atrazine for pre-emergence control, but it can contaminate water sources—follow local regulations.",
+        "goosegrass": "Goosegrass is a grassy weed that forms dense mats. Organic: Mulching with organic matter to block light. Chemical: Diuron for residual control, but test soil pH as it works best in neutral conditions.",
+        "potato farming": "In potato farming, maintain soil pH 5.5-6.5, rotate crops to prevent weeds, and use integrated pest management (IPM). For weeds, prioritize organic methods to preserve soil fertility.",
+        "herbicide safety": "Always read labels, wear PPE, and apply in calm weather. Organic options like Neem are safer for the environment; chemicals like Glyphosate require buffer zones near water sources."
+    }
+}

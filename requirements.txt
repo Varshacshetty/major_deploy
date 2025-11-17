@@ -1,7 +1,0 @@
-flask
-flask-cors
-ultralytics==8.1.0
-opencv-python-headless==4.8.0.74
-numpy
-pillow
-python-dotenv

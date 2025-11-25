@@ -91,16 +91,12 @@ ENHANCED_FALLBACKS.update(specific_fallbacks)
 
 # YOLO Model
 model = None
-import torch
-torch.serialization.add_safe_globals([YOLO])
-
 try:
     model = YOLO("weed_yolov8/weed_detection/weights/best.pt")
-    print("YOLO loaded successfully.")
+    logger.info("YOLO model loaded")
 except Exception as e:
-    print("YOLO load failed:", e)
+    logger.error(f"YOLO load failed: {e}")
     model = None
-
 
 # Global for latest detection
 latest_detection = None
@@ -415,7 +411,7 @@ def generate_pdf():
         return jsonify({"error": f"PDF failed: {str(e)}. Ensure upload was done first."}), 500
 
 # ---------------- GLOBAL JSON ERROR HANDLER ---------------- #
-from flask import jsonify
+
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -426,8 +422,5 @@ def handle_exception(e):
         return '{"error": "Unknown server error"}', 500
 
 
-
 if __name__ == "__main__":
-    
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(debug=True, host='0.0.0.0', port=5000)

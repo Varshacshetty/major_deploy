@@ -1,7 +1,7 @@
 Flask
 flask-cors
 gunicorn
-ultralytics==8.1.0
+ultralytics==8.2.103
 opencv-python-headless==4.8.0.74
 numpy<2.0
 pillow

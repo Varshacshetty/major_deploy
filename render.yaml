@@ -1,8 +1,10 @@
 services:
   - type: web
-    name: weed-detection-api
+    name: weed-detection
     env: python
     plan: free
-    region: singapore
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app"
+    runtime: python3
+    pythonVersion: "3.10.12"
+

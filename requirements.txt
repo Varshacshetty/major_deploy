@@ -7,3 +7,5 @@ numpy<2.0
 pillow
 python-dotenv
 requests
+fpdf2
+

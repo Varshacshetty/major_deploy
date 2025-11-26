@@ -3,10 +3,12 @@ services:
     name: weed-detection
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt"
-    runtime: python3
-    pythonVersion: "3.10.12"
-    startCommand: "gunicorn app:app -c gunicorn.conf.py"
 
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
 
+    startCommand: gunicorn app:app --timeout 200
 
+    # Render Free Plan default Python is 3.10
+    runtime: python

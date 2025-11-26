@@ -89,6 +89,9 @@ specific_fallbacks = {
 }
 ENHANCED_FALLBACKS.update(specific_fallbacks)
 
+import torch
+torch.serialization.add_safe_globals([__import__("ultralytics").nn.tasks.DetectionModel])
+
 # YOLO Model
 model = None
 try:
